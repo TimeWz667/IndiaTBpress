@@ -1,5 +1,5 @@
 {
-  "name": "IndiaTBpress",
+  "name": "india-tb-press",
   "version": "0.0.1",
   "description": "India TB modelling",
   "main": "index.js",
@@ -22,7 +22,10 @@
     "bootstrap-vue": "^2.21.2",
     "d3": "^7.3.0",
     "lodash": "^4.17.21",
+    "mathjs": "^10.3.0",
     "node-sass": "^7.0.1",
+    "odex": "^2.0.4",
+    "probability-distributions": "^0.9.1",
     "sass-loader": "^12.6.0"
   }
 }

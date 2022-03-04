@@ -10,17 +10,24 @@ export default {
     margin: {
       type: Object,
       default: () => {
-        return { top: 10, right: 30, bottom: 100, left: 80 };
+        return { top: 10, right: 30, bottom: 80, left: 80 };
       }
     },
     chartData: {
       type: Object,
       default: function() {
         return {
-          Data: [
-            { Year: 2010, M: 0.01, L: 0.005, U: 0.015},
-            { Year: 2020, M: 0.03, L: 0.025, U: 0.035 }
-          ],
+          Sel: "Inc",
+          Data: {
+            Inc: [
+              { Year: 2010, M: 0.01, L: 0.005, U: 0.015},
+              { Year: 2020, M: 0.03, L: 0.025, U: 0.035 }
+            ],
+            Mor: [
+              { Year: 2010, M: 0.01, L: 0.005, U: 0.015},
+              { Year: 2020, M: 0.03, L: 0.025, U: 0.035 }
+            ]
+          },
           Sims: []
         }
       }
@@ -38,7 +45,8 @@ export default {
       default: function() {
         this.x = d3
             .scaleLinear()
-            .rangeRound([this.margin.left, this.width - this.margin.right]);
+            .rangeRound([this.margin.left, this.width - this.margin.right])
+            .domain([2010, 2030]);
 
         this.y = d3
             .scaleLinear()
@@ -91,27 +99,23 @@ export default {
     updateChart: {
       type: Function,
       default: function() {
+        const ind = this.chartData.Sel;
+        const data = this.chartData.Data[this.chartData.Sel] || [];
+        const sims = this.chartData.Sims;
 
-        if (this.chartData.Data.length <= 0 && this.chartData.Sims.length <= 0) return;
 
-        // const parseTime = d3.timeParse("%Y");
-        // console.log(parseTime("2020"))
-        // let mx = d3.max(this.chartData, d => parseTime(d.Year));
-        // let mn = d3.min(this.chartData, d => parseTime(d.Year));
-        // console.log(mx)
-        this.x.domain([2010, 2025]);
+        if (data === undefined && sims.length <= 0) return;
 
-        console.log(this.x.domain());
+        const sims_u = d3.max(sims, d => d[ind]);
+        const dat_u = d3.max(data, ent => ent.U) || 0;
 
-        this.y.domain([
-          0,
-          1.1 *
-          d3.max(
-              this.chartData.Data.filter(ent => ent.U !== undefined),
-              ent => ent.U
-          )
-        ]);
+        this.y.domain([0, 1.1 * Math.max(sims_u, dat_u)]);
 
+        this.svg.select(".yLab").text(this.ylab);
+
+        const fmt = (this.value_format instanceof String)?d3.format(this.value_format):this.value_format;
+
+        this.yAxis.tickFormat(fmt);
 
         this.svg
             .select("g.xAxis")
@@ -131,9 +135,40 @@ export default {
             .duration(100)
             .call(this.yAxis);
 
+        const line = d3.line()
+            .x(d => this.x(d.Year))
+            .y(d => this.y(d[ind]));
+
+        this.svg
+            .selectAll("g.path")
+            .data(d3.group(this.chartData.Sims, d => d.Scenario))
+            .join(
+                enter => {
+                  enter
+                      .append("g")
+                      .attr("class", "path")
+                      .call(g => {
+                        g.append("path")
+                            .style("fill", "none")
+                            .style("opacity", 0.5)
+                            .style("stroke", "#444444" )
+                            .attr("d", d => line(d[1]));
+                      })
+                },
+                update => {
+                  update
+                      .call(g => {
+                        g.select("path")
+                            .transition(100)
+                            .attr("d", d => line(d[1]));
+                      })
+                },
+                exit => exit.transition(100).remove()
+            )
+
         this.svg
             .selectAll("g.point")
-            .data(this.chartData.Data)
+            .data(data)
             .join(
                 enter => {
                   enter

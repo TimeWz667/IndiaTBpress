@@ -6,7 +6,7 @@
             title="Incidence"
             v-bind:chartData="Inc"
             :value_format="fmt100k"
-            ylab="Annual rate per 100 000"
+            ylab="Annual rate, per 100k"
         >
           <div slot="footer">WHO TB burden estimates</div>
         </tsplot-card>
@@ -16,7 +16,7 @@
             title="Mortality"
             :chartData="Mor"
             :value_format="fmt100k"
-            ylab="Annual rate"
+            ylab="Annual rate, per 100k"
         >
           <div slot="footer">WHO TB burden estimates</div>
         </tsplot-card>
@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import TsplotCard from "./Cards/TsplotCard"
+import TsplotCard from "./Cards/TsplotCard";
 import axios from "axios";
 import * as d3 from "d3";
 
@@ -93,7 +93,7 @@ export default {
   },
   methods: {
     fetchData() {
-      axios.get("/Targets.json").then(res => {
+      axios.get("/Valid.json").then(res => {
         const ds = res.data.All;
 
         this.PrevA.Data = ds.filter(d => d.Index === "PrAsym");
