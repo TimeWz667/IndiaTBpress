@@ -71,7 +71,7 @@ d %>%
     Prev_E = Prev_Sym * CS_Sym,
     r_mu_sym = r_sc + r_die_untx,
     r_mu_asym = r_sc,
-    r_det = Prev_E / Det,
+    r_det = Det / Prev_E,
     r_cs = Prev_E / Prev_C * (r_mu_sym + r_det),
     r_aware = Prev_C / Prev_S * (r_mu_sym + r_cs),
     r_onset = Prev_S / Prev_A * (r_mu_sym + r_aware),

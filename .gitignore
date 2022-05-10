@@ -43,3 +43,4 @@ dist
 .serverless/
 
 .idea/
+.Rproj.user
