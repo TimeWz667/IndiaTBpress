@@ -71,7 +71,7 @@ import TsplotCard from "../Cards/TsplotCard";
 import Card from "../Cards/Card";
 import axios from "axios";
 import * as d3 from "d3";
-const { Cascade } = require("../model/cascade.js");
+const { Cohort } = require("../../model/cohort.js");
 
 
 export default {
@@ -151,7 +151,7 @@ export default {
         const ds = res.data.All;
 
         this.Raw = ds
-        this.model = new Cascade(ds);
+        this.model = new Cohort(ds);
         this.Chart.Data = Object.fromEntries(d3.group(ds, d => d.Index));
         this.update();
       });

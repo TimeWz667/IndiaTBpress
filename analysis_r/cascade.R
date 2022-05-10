@@ -38,7 +38,7 @@ r_die_untx <- 0.1
 pr_asym <- 0.39
 
 
-d %>% 
+res_cascade <- d %>% 
   #select(Location, starts_with("CNR"), starts_with("Tx")) %>% 
   mutate(
     TxI_pri = TxI_pri,
@@ -74,13 +74,33 @@ d %>%
     r_det = Det / Prev_E,
     r_cs = Prev_E / Prev_C * (r_mu_sym + r_det),
     r_aware = Prev_C / Prev_S * (r_mu_sym + r_cs),
-    r_onset = Prev_S / Prev_A * (r_mu_sym + r_aware),
-    r_onset = r_onset[Location == "India"],
-    r_aware = r_onset * Prev_A / Prev_S - r_mu_sym,
-    r_cs = r_aware * Prev_S / Prev_C - r_mu_sym,
-    r_det = r_cs * Prev_C / Prev_E - r_mu_sym
+    r_onset = Prev_S / Prev_A * (r_mu_sym + r_aware)
   ) %>% 
-  select(Location, Prev_A, Prev_S, Prev_C, Prev_E, starts_with("r_"))
+  select(Location, Det, Prev_A, Prev_S, Prev_C, Prev_E, starts_with("r_"))
   # ) %>% 
   # select(Location, starts_with("TxI_", ignore.case = F), starts_with("Det"), starts_with("CNR")) %>% 
+
+res_cascade
+
+
+# shared r_onset
+
+res_cascade %>% 
+  mutate(
+    r_onset = r_onset[Location == "India"],
+    Prev = Prev_A + Prev_S + Prev_C + Prev_E,
+    Prev_SCE0 = Prev_S + Prev_C + Prev_E,
+    Prev_A = (Det + r_mu_sym * Prev) / (r_onset + r_mu_sym),
+    Prev_S = Prev_S / Prev_SCE0 * (Prev - Prev_A),
+    Prev_C = Prev_C / Prev_SCE0 * (Prev - Prev_A),
+    Prev_E = Prev_E / Prev_SCE0 * (Prev - Prev_A),
+    r_aware = r_onset * Prev_A / Prev_S - r_mu_sym,
+    r_cs = r_aware * Prev_S / Prev_C - r_mu_sym,
+    r_det = r_cs * Prev_C / Prev_E - r_mu_sym, 
+    Det2 = Prev_E * r_det,
+    PrAsym = Prev_A / Prev,
+    PNratio = Prev / Det
+  ) %>% 
+  select(-Prev_SCE0, - Prev)
+
 

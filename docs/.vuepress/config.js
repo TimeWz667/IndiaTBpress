@@ -47,9 +47,6 @@ module.exports = {
         '',
         'data',
       ],
-      '/cascade/': [
-        '',
-      ],
     },
     sidebarDepth: 3
   },

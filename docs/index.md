@@ -22,7 +22,7 @@ footer: Made by Chu-Chang Ku
             <div class="card">
             <a href="/cascade/">
                 <div class="card-body">
-                    <h4 class="card-title">Cascade</h4>
+                    <h4 class="card-title">Cohort</h4>
                     <p class="card-text">fig</p>
                 </div>
             </a>

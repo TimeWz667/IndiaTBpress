@@ -1,12 +1,16 @@
-// import * as PD from "probability-distributions";
-import * as odex from "odex";
-import { mean, diff, log, exp, sum } from "mathjs";
+const fs = require('fs');
+
+const PD = require("probability-distributions");
+const odex = require("odex");
+
+const { mean, diff, log, exp, sum } = require('mathjs');
+
+let rawdata = fs.readFileSync("./docs/.vuepress/public/Valid.json");
+let x = JSON.parse(rawdata).All;
 
 
-class Cascade {
+class TB {
     constructor(x) {
-
-        console.log(x);
         this.Raw = x;
         this.Year0 = 2016;
 
@@ -119,47 +123,69 @@ class Cascade {
 
     simulate(pars, t0, t1) {
         let y0 = this.get_y0(pars, t0);
-
         y0 = [y0.prev_a, y0.prev_s, y0.prev_c, y0.prev_t];
 
         const s = new odex.Solver(y0.length);
-        s.denseOutput = true;
 
         const mea = [];
 
+        s.denseOutput = true;
         s.solve(this.buildModel(pars), t0, y0, t1, s.grid(1, function(x,y) {
-            const { adr, r_det, r_sc, r_tx_succ, r_tx_ltfu, r_uta_die, r_uts_die, r_tx_die } = pars;
-
-            const sc = "M";
+            const {
+                adr,
+                r_onset, r_aware, r_det,
+                r_sc,
+                r_tx_succ, r_tx_ltfu,
+                r_uta_die, r_uts_die, r_tx_die } = pars;
 
             const prev = sum(y);
             const inc = (r_sc + r_uta_die) * y[0] + (r_sc + r_uts_die) * (y[1] + y[2]) + (r_tx_die + r_tx_succ + r_tx_ltfu) * y[3] - prev * adr;
             const mor_ut = r_uta_die * y[0] + r_uts_die * (y[1] + y[2]);
             const mor_tx = r_tx_die * y[3];
-            const tx = r_tx_die + r_tx_ltfu + r_tx_succ
-            const p_tx_die = r_tx_die / tx, p_tx_ltfu = r_tx_ltfu / tx, p_tx_succ = r_tx_succ / tx;
 
             mea.push({
                 Year: x,
-                Scenario: sc,
                 Prev: prev,
-                PrevAsym: y[0],
-                PrevSym: y[1],
-                PrevCS: y[2],
-                PrevTx: y[3],
+                PrevA: y[0],
+                PrevS: y[1],
+                PrevC: y[2],
+                PrevT: y[3],
                 Inc: inc,
                 MorUt: mor_ut,
                 MorTx: mor_tx,
                 Mor: mor_ut + mor_tx,
                 TxI: r_det * y[2],
-                TxOutDeath: p_tx_die,
-                TxOutLTFU: p_tx_ltfu,
-                TxOutSucc: p_tx_succ
             })
         }));
 
         return mea;
     }
+
 }
 
-export { Cascade };
+
+const tb = new TB(x);
+
+const form = {
+    r_sc: 0.2,
+    rr_asym_die: 0,
+    r_tx_succ: 2
+}
+
+
+
+const pars = tb.get_pars(form);
+const y0 = tb.get_y0(pars, 2010);
+
+
+console.log(tb.get_pars(form))
+
+console.log(y0)
+
+sims = tb.simulate(pars, 2010, 2020);
+
+console.log(sims)
+
+sims.forEach(s => {
+    console.log(`Time: ${s.Year}, Mor: ${s.TxI}`)
+})
